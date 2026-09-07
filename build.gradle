@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+}
+
+group = 'study'
+version = '0.0.1'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform {
+        // ./gradlew test -PexcludeTags=observation
+        // 관찰 전용 테스트를 빼고 검증 테스트만 돌리고 싶을 때 쓴다.
+        if (project.hasProperty('excludeTags')) {
+            excludeTags project.property('excludeTags').toString().split(',')
+        }
+    }
+
+    // 스레드가 "무슨 일을 했는지" 보는 것이 이 저장소의 목적이므로
+    // 테스트가 찍는 타임라인 로그를 콘솔에 그대로 흘려보낸다.
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        showStandardStreams = true
+        exceptionFormat = 'full'
+    }
+}
