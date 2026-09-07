@@ -1,24 +1,24 @@
 package study.thread.step01_basics;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import study.thread.support.Sleeper;
 import study.thread.support.Timeline;
 
 /**
  * step01 — 스레드를 만드는 방법과, {@code start()}가 정확히 무엇을 하는가.
  *
- * <p>확인하려는 것: 새 스레드에서 실행됐다는 사실을 어떻게 "증명"할 것인가.
- * 눈으로 보는 대신, 실제로 실행한 스레드의 이름을 붙잡아 단언한다.
+ * <p>과제를 하나씩 채워 넣는다. 전부 빨간불로 시작한다.
+ * 하나 통과시킬 때마다 초록불이 하나씩 늘어난다.
+ *
+ * <p>쓸 수 있는 도구:
+ * <ul>
+ *   <li>{@link Timeline#log(String)} — 어느 스레드가 언제 무엇을 했는지 한 줄 출력
+ *   <li>{@link study.thread.support.Sleeper#millis(long)} — try-catch 없는 sleep
+ * </ul>
  */
 class ThreadCreationTest {
 
@@ -28,138 +28,83 @@ class ThreadCreationTest {
     }
 
     @Test
-    @DisplayName("Thread를 상속하면 run()을 재정의해 할 일을 적는다")
-    void extendThread() throws InterruptedException {
-        AtomicReference<String> ranOn = new AtomicReference<>();
+    @DisplayName("과제1 - Thread를 상속해 만든 스레드가 그 스레드에서 실행됨을 증명한다")
+    void extendThread() {
+        // 1. Thread를 상속한 스레드를 만들고 이름을 "extends-thread"로 준다
+        // 2. run() 안에서 자기가 어느 스레드인지 붙잡는다
+        // 3. 시작시키고, 끝날 때까지 기다린 뒤, 붙잡은 이름이 "extends-thread"인지 단언한다
+        //
+        // 생각할 것: "새 스레드에서 실행됐다"를 눈이 아니라 값으로 증명하려면 무엇을 붙잡아야 하나?
+        // 힌트: 스레드 안에서 만든 값을 밖으로 꺼내려면 AtomicReference<String>
 
-        Thread thread = new Thread("extends-thread") {
-            @Override
-            public void run() {
-                Timeline.log("Thread를 상속한 run() 실행");
-                ranOn.set(Thread.currentThread().getName());
-            }
-        };
-
-        thread.start();
-        thread.join();
-
-        // 내가 만든 그 스레드가 실행했다 — 호출한 쪽(main)이 아니라.
-        assertThat(ranOn.get()).isEqualTo("extends-thread");
+        fail("아직 작성하지 않았다");
     }
 
     @Test
-    @DisplayName("Runnable로 '할 일'을 분리하면 스레드와 작업이 따로 논다")
-    void implementRunnable() throws InterruptedException {
-        AtomicReference<String> ranOn = new AtomicReference<>();
+    @DisplayName("과제2 - Runnable로 만들면 '할 일'과 '실행 주체'가 분리된다")
+    void implementRunnable() {
+        // 1. Runnable 하나를 만든다 (람다로)
+        // 2. 그 Runnable을 새 스레드에게 실행시킨다 → 스레드 이름이 찍히는지 단언
+        // 3. 똑같은 Runnable을 이번엔 그냥 task.run()으로 직접 호출한다 → 이번엔 누구 이름이 찍히나?
+        //
+        // 생각할 것: 같은 작업 객체를 두 주체가 실행할 수 있다는 게 왜 중요한가?
+        //           (step05 스레드 풀, step07 가상 스레드가 여기서 출발한다)
 
-        // 작업(Runnable)은 '무엇을 할지'만 안다. '누가 실행할지'는 모른다.
-        Runnable task = () -> {
-            Timeline.log("Runnable 실행");
-            ranOn.set(Thread.currentThread().getName());
-        };
-
-        Thread thread = new Thread(task, "runnable-thread");
-        thread.start();
-        thread.join();
-
-        assertThat(ranOn.get()).isEqualTo("runnable-thread");
-
-        // 같은 작업을 다른 스레드가 실행할 수도, 심지어 그냥 호출할 수도 있다.
-        // 작업과 실행 주체가 분리됐기 때문이다. step05의 스레드 풀이 여기서 출발한다.
-        task.run();
-        assertThat(ranOn.get()).isEqualTo(Thread.currentThread().getName());
+        fail("아직 작성하지 않았다");
     }
 
     @Test
-    @DisplayName("run()은 그냥 메서드 호출이다 — 스레드는 시작조차 하지 않는다")
+    @DisplayName("과제3 - run()은 스레드를 시작시키지 않는다")
     void runDoesNotStartAThread() {
-        AtomicReference<String> ranOn = new AtomicReference<>();
-        Thread thread = new Thread(() -> ranOn.set(Thread.currentThread().getName()), "never-started");
+        // 1. 스레드를 만들되 start()가 아니라 run()을 호출한다
+        // 2. 실제로 실행한 게 누구인지 단언한다
+        // 3. 그 스레드의 getState()가 무엇인지 단언한다
+        //
+        // 생각할 것: 3번의 상태값이 이 과제의 핵심 증거다. 왜 그런가?
 
-        thread.run(); // start()가 아니다
-
-        // 실행한 것은 나(main)다. 새 스레드가 아니다.
-        assertThat(ranOn.get()).isEqualTo(Thread.currentThread().getName());
-        // 그리고 이 스레드는 아직 태어나지도 않은 상태다.
-        assertThat(thread.getState()).isEqualTo(Thread.State.NEW);
+        fail("아직 작성하지 않았다");
     }
 
     @Test
-    @DisplayName("start()는 한 번만 호출할 수 있다")
-    void startCanBeCalledOnlyOnce() throws InterruptedException {
-        Thread thread = new Thread(() -> Timeline.log("한 번 실행"), "once");
-        thread.start();
-        thread.join();
+    @DisplayName("과제4 - 끝난 스레드는 다시 시작할 수 없다")
+    void startCanBeCalledOnlyOnce() {
+        // 1. 스레드를 start() 하고 join()으로 끝날 때까지 기다린다
+        // 2. 끝난 뒤의 getState()를 단언한다
+        // 3. 그 스레드를 다시 start() 하면 어떻게 되는지 확인하고 단언한다
+        //
+        // 힌트: assertThatThrownBy(...).isInstanceOf(...)
+        // 생각할 것: 스레드를 재사용할 수 없다면, 요청이 초당 1000개 오면 어떻게 되나?
 
-        // 끝난 스레드는 되살릴 수 없다. 스레드는 재사용 대상이 아니다.
-        // "그럼 매번 새로 만들어야 하나?"에 대한 답이 step05의 스레드 풀이다.
-        assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
-        assertThatThrownBy(thread::start).isInstanceOf(IllegalThreadStateException.class);
+        fail("아직 작성하지 않았다");
     }
 
     @Test
-    @DisplayName("join()은 그 스레드가 끝날 때까지 기다린다")
-    void joinWaitsForCompletion() throws InterruptedException {
-        List<String> done = new CopyOnWriteArrayList<>();
+    @DisplayName("과제5 - join()은 그 스레드가 끝날 때까지 기다린다")
+    void joinWaitsForCompletion() {
+        // 1. 100ms쯤 걸리는 작업을 하는 스레드를 만든다 (Sleeper.millis 사용)
+        // 2. 작업 결과를 리스트에 담게 한다
+        // 3. start() → join() 후, 결과가 리스트에 들어있는지 단언한다
+        // 4. Timeline.log()를 곳곳에 심어서 main이 언제부터 언제까지 멈춰 있었는지 눈으로 확인한다
+        //
+        // 생각할 것: join() 하는 동안 main은 뭘 하고 있었나? 그게 낭비인가?
 
-        Thread worker = new Thread(() -> {
-            Timeline.log("작업 시작");
-            Sleeper.millis(100);
-            done.add("worker");
-            Timeline.log("작업 끝");
-        }, "worker");
-
-        worker.start();
-        Timeline.log("worker를 기다린다");
-        worker.join();
-        Timeline.log("worker가 끝난 것을 확인했다");
-
-        // join()이 돌아왔다는 것은 worker가 확실히 끝났다는 뜻이다.
-        assertThat(done).containsExactly("worker");
-        assertThat(worker.getState()).isEqualTo(Thread.State.TERMINATED);
+        fail("아직 작성하지 않았다");
     }
 
     @Test
-    @DisplayName("데몬 스레드는 JVM이 끝나기를 붙잡지 않는다")
-    void daemonThread() {
-        Thread daemon = new Thread(() -> Sleeper.millis(10_000), "daemon");
-        daemon.setDaemon(true); // start() 전에만 설정할 수 있다
-
-        daemon.start();
-
-        assertThat(daemon.isDaemon()).isTrue();
-        // 일반 스레드였다면 JVM은 이 스레드가 끝날 때까지(10초) 종료되지 못한다.
-        // 데몬이면 남은 스레드가 데몬뿐일 때 JVM이 그냥 종료된다.
-    }
-
-    @Test
-    @DisplayName("[관찰] 여러 스레드의 실행 순서는 보장되지 않는다")
+    @DisplayName("과제6 - [관찰] 여러 스레드의 실행 순서는 보장되지 않는다")
     @Tag("observation")
     void executionOrderIsNotGuaranteed() {
-        List<String> finishOrder = new CopyOnWriteArrayList<>();
+        // 1. t1~t5 이름의 스레드 5개를 만들어 순서대로 start() 한다
+        // 2. 각자 끝난 순서를 기록하게 한다 (여러 스레드가 같이 쓰므로 CopyOnWriteArrayList)
+        // 3. 전부 join() 한 뒤 시작 순서와 끝난 순서를 Timeline.log()로 찍는다
+        //
+        // 주의: 이 테스트에는 단언을 걸지 않는다.
+        //       뒤바뀌는 것도 정상이고 안 뒤바뀌는 것도 정상이라, 어느 쪽을 단언해도 거짓말이 된다.
+        //       그래서 @Tag("observation")이 붙어 있다.
+        //
+        // 다 만들었으면 fail을 지우고 여러 번 돌려본다. 매번 같은 결과가 나오나?
 
-        List<Thread> threads = IntStream.rangeClosed(1, 5)
-                .mapToObj(i -> new Thread(() -> {
-                    Timeline.log("실행");
-                    finishOrder.add("t" + i);
-                }, "t" + i))
-                .toList();
-
-        threads.forEach(Thread::start);
-        threads.forEach(ThreadCreationTest::joinQuietly);
-
-        // 단언하지 않는다. 순서가 뒤바뀌는 것이 정상이고, 뒤바뀌지 않는 것도 정상이다.
-        // 여기에 assert를 걸면 그 테스트는 거짓말쟁이가 된다.
-        Timeline.log("시작 순서: [t1, t2, t3, t4, t5]");
-        Timeline.log("끝난 순서: " + finishOrder);
-    }
-
-    private static void joinQuietly(Thread thread) {
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("기다리는 중 인터럽트됨", e);
-        }
+        fail("아직 작성하지 않았다");
     }
 }
