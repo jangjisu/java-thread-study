@@ -13,7 +13,7 @@ import study.thread.support.SlowApi;
 class ThreadTest01 {
 
     @Test
-    @DisplayName("1. 지금 나를 실행하는 것은 플랫폼 스레드다 - 가상 스레드도 데몬도 아니다")
+    @DisplayName("1. currentThread() 로 얻은 스레드는 플랫폼 스레드이며 데몬이 아니다")
     void currentThreadIsPlatformThread() {
         Thread current = Thread.currentThread();
 
@@ -29,7 +29,7 @@ class ThreadTest01 {
     }
 
     @Test
-    @DisplayName("2. 외부 API 응답을 기다리며 자는 중에는 TIMED_WAITING 이다")
+    @DisplayName("2. sleep() 중인 스레드는 NEW → TIMED_WAITING → TERMINATED 로 전이한다")
     void sleepingThreadIsTimedWaiting() throws InterruptedException {
         Thread sleeping = new Thread(() -> SlowApi.call("결제"), "sleeping");
 
@@ -56,7 +56,7 @@ class ThreadTest01 {
     }
 
     @Test
-    @DisplayName("3. CPU를 쓰며 계산하는 중에는 RUNNABLE 이다")
+    @DisplayName("3. CPU 연산 중인 스레드는 NEW → RUNNABLE → TERMINATED 로 전이한다")
     void busyThreadIsRunnable() throws InterruptedException {
         Thread busy = new Thread(this::burnCpu, "busy");
 
@@ -80,7 +80,7 @@ class ThreadTest01 {
     }
 
     @Test
-    @DisplayName("4. run() 을 부르면 새 스레드가 아니라 부른 쪽에서 실행된다")
+    @DisplayName("4. run() 은 호출한 스레드에서 실행되고 스레드 상태는 NEW 로 남는다")
     void runExecutesOnCallerThread() {
         AtomicReference<String> executedBy = new AtomicReference<>();
         Thread worker = new Thread(() -> executedBy.set(Thread.currentThread().getName()), "worker");
@@ -96,7 +96,7 @@ class ThreadTest01 {
     }
 
     @Test
-    @DisplayName("5. run() 3번 - 스레드를 3개 만들어도 하나도 시작되지 않아 순차 실행된다")
+    @DisplayName("5. run() 을 3번 호출하면 스레드가 시작되지 않고 순차 실행된다")
     void runIsSequential() {
         Thread[] threads = createApiThreads();
 
@@ -116,7 +116,7 @@ class ThreadTest01 {
     }
 
     @Test
-    @DisplayName("6. start() 3번 - start() 를 먼저 다 부르고 join() 을 모아서 부르면 동시에 실행된다")
+    @DisplayName("6. start() 3번 후 join() 3번을 호출하면 동시 실행된다")
     void startIsConcurrent() throws InterruptedException {
         Thread[] threads = createApiThreads();
 

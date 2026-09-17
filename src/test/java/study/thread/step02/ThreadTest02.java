@@ -16,7 +16,7 @@ class ThreadTest02 {
     private static final int SLOW_MILLIS = 500;
 
     @Test
-    @DisplayName("1. start() 를 부른 순서와 실행되는 순서는 다르다")
+    @DisplayName("1. start() 호출 순서와 실행 순서는 일치하지 않는다")
     void startOrderIsNotExecutionOrder() throws InterruptedException {
         List<String> executionOrder = new CopyOnWriteArrayList<>();
 
@@ -43,7 +43,7 @@ class ThreadTest02 {
     }
 
     @Test
-    @DisplayName("2. 완료 순서는 시작 순서가 아니라 걸린 시간이 정한다")
+    @DisplayName("2. 완료 순서는 각 작업의 소요 시간으로 결정된다")
     void completionOrderFollowsDuration() throws InterruptedException {
         List<String> completionOrder = new CopyOnWriteArrayList<>();
 
@@ -77,7 +77,7 @@ class ThreadTest02 {
     }
 
     @Test
-    @DisplayName("3. 결과를 모으면 완료 순서대로 담긴다 - 그래서 순서에 기대는 코드는 깨진다")
+    @DisplayName("3. 결과는 요청 순서가 아니라 완료 순서대로 수집된다")
     void resultsAreCollectedInCompletionOrder() throws InterruptedException {
         List<String> results = new CopyOnWriteArrayList<>();
 
@@ -105,7 +105,7 @@ class ThreadTest02 {
     }
 
     @Test
-    @DisplayName("4. join() 을 부르는 순서는 전체 시간에 영향을 주지 않는다")
+    @DisplayName("4. join() 호출 순서는 전체 소요 시간에 영향을 주지 않는다")
     void joinOrderDoesNotChangeTotalTime() throws InterruptedException {
         Thread slow = new Thread(() -> SlowApi.call("느림", SLOW_MILLIS), "slow");
         Thread fast = new Thread(() -> SlowApi.call("빠름", FAST_MILLIS), "fast");
@@ -132,7 +132,7 @@ class ThreadTest02 {
     }
 
     @Test
-    @DisplayName("5. join(timeout) 은 기다림만 포기한다 - 스레드는 계속 일해서 결국 결과를 만든다")
+    @DisplayName("5. join(timeout) 이 반환된 뒤에도 스레드는 실행을 계속한다")
     void joinWithTimeoutDoesNotStopTheThread() throws InterruptedException {
         List<String> results = new CopyOnWriteArrayList<>();
 
@@ -169,7 +169,7 @@ class ThreadTest02 {
     }
 
     @Test
-    @DisplayName("6. 순서를 강제하려면 동시성을 포기해야 한다")
+    @DisplayName("6. start() 와 join() 을 교대로 호출하면 순차 실행된다")
     void forcingOrderCostsConcurrency() throws InterruptedException {
         List<String> completionOrder = new CopyOnWriteArrayList<>();
 

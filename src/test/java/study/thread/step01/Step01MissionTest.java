@@ -32,7 +32,7 @@ class Step01MissionTest {
      *   타임라인의 "호출 시작" 세 줄이 500ms 씩 밀려서 찍힌다.
      */
     @Test
-    @DisplayName("미션1 - run() 으로 부르면 스레드가 하나도 시작되지 않아 순차 실행된다")
+    @DisplayName("미션1 - run() 을 3번 호출하면 스레드가 시작되지 않고 순차 실행된다")
     void callSequentiallyWithRun() {
         Thread[] threads = createApiThreads();
 
@@ -57,7 +57,7 @@ class Step01MissionTest {
      *   start() 와 join() 을 한 for 문 안에서 짝지어 부르면 어떻게 될까? 직접 해보면 안다.
      */
     @Test
-    @DisplayName("미션2 - start() 로 부르면 셋이 동시에 실행돼 500ms 로 끝난다")
+    @DisplayName("미션2 - start() 3번 후 join() 3번을 호출하면 동시 실행된다")
     void callConcurrentlyWithStart() throws InterruptedException {
         Thread[] threads = createApiThreads();
 

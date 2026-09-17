@@ -22,7 +22,7 @@ class Step01MissionSolvedTest {
     }
 
     @Test
-    @DisplayName("미션1 - run() 으로 부르면 스레드가 하나도 시작되지 않아 순차 실행된다")
+    @DisplayName("미션1 - run() 을 3번 호출하면 스레드가 시작되지 않고 순차 실행된다")
     void callSequentiallyWithRun() {
         Thread[] threads = createApiThreads();
 
@@ -50,7 +50,7 @@ class Step01MissionSolvedTest {
      *   다음 요청이 들어가서 결국 1500ms 가 걸린다.
      */
     @Test
-    @DisplayName("미션2 - start() 로 부르면 셋이 동시에 실행돼 500ms 로 끝난다")
+    @DisplayName("미션2 - start() 3번 후 join() 3번을 호출하면 동시 실행된다")
     void callConcurrentlyWithStart() throws InterruptedException {
         Thread[] threads = createApiThreads();
 

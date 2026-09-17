@@ -27,7 +27,7 @@ class Step02MissionSolvedTest {
     }
 
     @Test
-    @DisplayName("미션1 - 먼저 시킨 순서가 아니라 빨리 끝난 순서대로 담긴다")
+    @DisplayName("미션1 - 완료 순서는 각 작업의 소요 시간으로 결정된다")
     void completionOrderFollowsDuration() throws InterruptedException {
         List<String> completionOrder = new CopyOnWriteArrayList<>();
 
@@ -92,7 +92,7 @@ class Step02MissionSolvedTest {
      *   그럼 진짜로 그 스레드를 멈추게 하려면 어떻게 해야 할까? -> step03
      */
     @Test
-    @DisplayName("미션2 - join(timeout) 은 기다림만 포기한다 - 스레드는 계속 일해서 결국 결과를 만든다")
+    @DisplayName("미션2 - join(timeout) 이 반환된 뒤에도 스레드는 실행을 계속한다")
     void joinWithTimeoutDoesNotStopTheThread() throws InterruptedException {
         final int waitLimitMillis = 200;
 
@@ -109,7 +109,7 @@ class Step02MissionSolvedTest {
 
         thread.join(waitLimitMillis);
         long waited = System.currentTimeMillis() - start;
-        
+
         List<String> resultsAtTimeout = List.copyOf(results);
 
         thread.join();
